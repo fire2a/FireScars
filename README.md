@@ -17,7 +17,7 @@ that a better balanced dataset results on a better performance.
 
 ### Material and Methods
 
-Two specific datasets were constructed from The Landscape Fire Scars Database, to evaluate the performance using different image sizes. 
+Two specific datasets were cropped out from the files of The Landscape Fire Scars Database, to evaluate the performance using different image sizes. These datasets included **1966** fires, dividing the data almost equally for each region, **with 977 events from Valparaíso and 989 from BioBío**. 
 
 <img src="Images/methods_data.jpg" width="615" height="384">
 
@@ -26,6 +26,29 @@ Within the Convolutional Neural Network (CNN), the model U Net was selected for 
 <img src="Images/u_net.jpg" width="755" height="387">
 
 ### Results
+
+The results of the models are presented in the following Table:
+
+\begin{table*}[ht]
+    \centering
+    \caption{Tests for the HPO and the corresponding DC}
+    \begin{tabular}{@{}cccccccc@{}}
+    \toprule
+ Name                                                    & Configuration              & Val DC$^a$                        \\ \midrule
+    Baseline performance                                    & Base HPO$^b$                   & 0.948  \\ \midrule
+    Filters$^b$ & 32/256                     & 0.937        \\                 
+           & 160/1280                   & 0.946
+           \\ \midrule
+         Learning rate & 1e-5                & 0.92          \\
+           & 1e-3                       & 0.942
+           \\ \midrule
+         Batch size                                          & 10                         & 0.947            \\            
+            & 24 & 0.942
+
+\\ \bottomrule
+    \label{tab:hpo}
+    \end{tabular}
+\\
 
 Finallly, some highlights of the model's performance can be seen:
 
