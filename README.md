@@ -4,7 +4,7 @@
 ---
 #### Project on automatic recognition of fire scars using LANDSAT's satellite imagery applying the U-Net model
 ---
-### Abstract
+### Abstract 
 
 Wildfires are a critical problem among the last years worldwide due to their consequences, such
 as the carbon footprint, besides other ecological, economic and social impacts. Correspondingly,
@@ -17,6 +17,7 @@ including a better and worse class balance respectively. The testing results usi
 tative images of the study area: Dice Coefficient (DC)=0.93, Omission error (OE)=0.086 and
 Commission Error (CE)=0.045- for AS, and DC=0.86, OE=0,12 and CE=0,12 for 128, proving
 that a better balanced dataset results on a better performance.
+
 ---
 ### Material and Methods
 
@@ -27,6 +28,7 @@ Two specific datasets were cropped out from the files of The Landscape Fire Scar
 Within the Convolutional Neural Network (CNN), the model U Net was selected for the prediction of the burned areas.
 
 <img src="Images/u_net.jpg" width="755" height="387">
+
 ---
 
 ### Results
