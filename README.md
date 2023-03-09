@@ -27,16 +27,8 @@ Within the Convolutional Neural Network (CNN), the model U Net was selected for 
 
 ### Results
 
-The results of the models are presented in the following Table:
-|                                          | Parameter               | Model AS  | Model 128  | 
-|------------------------------------------|-------------------------|-----------|------------|
-| Training and validation                  | Epoch                   | 22        | 15         |
-|                                          | Train loss              | 0.008     | 0.014      |
-|                                          | Val loss                | 0.011     | 0.019      |
-|                                          | Val DC                  | 0.952     | 0.921      |
-| Testing                                  | DC                      | 0.930     | 0.863      |
-|                                          | CE                      | 0.0858    | 0.146      |
-|                                          | OE                      | 0.0446    | 0.0920     |
+<img src="Images/Results.jpg" width="401" height="208">
+
 
 Finallly, some highlights of the model's performance can be seen:
 
