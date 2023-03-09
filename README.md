@@ -1,9 +1,9 @@
 # Automatic burned area mapping approach using Deep Learning 
 
 #### Ian Wulff-Limongi, Cristobal Pais, Jaime Carrasco, Alejandro Miranda and Andres Weintraub
-
+___
 #### Project on automatic recognition of fire scars using LANDSAT's satellite imagery applying the U-Net model
-
+___
 ### Abstract
 
 Wildfires are a critical problem among the last years worldwide due to their consequences, such
@@ -17,7 +17,7 @@ including a better and worse class balance respectively. The testing results usi
 tative images of the study area: Dice Coefficient (DC)=0.93, Omission error (OE)=0.086 and
 Commission Error (CE)=0.045- for AS, and DC=0.86, OE=0,12 and CE=0,12 for 128, proving
 that a better balanced dataset results on a better performance.
-
+___
 ### Material and Methods
 
 Two specific datasets were cropped out from the files of The Landscape Fire Scars Database, to evaluate the performance using different image sizes. These datasets included **1966** fires, dividing the data almost equally for each region, **with 977 events from Valparaíso and 989 from BioBío**. 
@@ -27,7 +27,7 @@ Two specific datasets were cropped out from the files of The Landscape Fire Scar
 Within the Convolutional Neural Network (CNN), the model U Net was selected for the prediction of the burned areas.
 
 <img src="Images/u_net.jpg" width="755" height="387">
-
+___
 ### Results
 
 In the Table 1 can be seen the results for each model, AS and 128.
