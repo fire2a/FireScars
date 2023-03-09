@@ -29,26 +29,16 @@ Within the Convolutional Neural Network (CNN), the model U Net was selected for 
 
 The results of the models are presented in the following Table:
 
-\begin{table*}[ht]
-    \centering
-    \caption{Tests for the HPO and the corresponding DC}
-    \begin{tabular}{@{}cccccccc@{}}
-    \toprule
- Name                                                    & Configuration              & Val DC$^a$                        \\ \midrule
-    Baseline performance                                    & Base HPO$^b$                   & 0.948  \\ \midrule
-    Filters$^b$ & 32/256                     & 0.937        \\                 
-           & 160/1280                   & 0.946
-           \\ \midrule
-         Learning rate & 1e-5                & 0.92          \\
-           & 1e-3                       & 0.942
-           \\ \midrule
-         Batch size                                          & 10                         & 0.947            \\            
-            & 24 & 0.942
-
-\\ \bottomrule
-    \label{tab:hpo}
-    \end{tabular}
-\\
+| \multicolumn{2}{l}{}                     | \multicolumn{2}{l}{Model} |
+|------------------------------------------|---------------------------|
+|                                          | Parameter                 | AS     | 128    |
+| \multirow{4}{*}{Training and validation} | Epoch                     | 22     | 15     |
+|                                          | Train loss$^a$            | 0.008  | 0.014  |
+|                                          | Val loss$^b$              | 0.011  | 0.019  |
+|                                          | Val DC                    | 0.952  | 0.921  |
+| \multirow{4}{*}{Testing}                 | DC                        | 0.930  | 0.863  |
+|                                          | CE                        | 0.0858 | 0.146  |
+|                                          | OE                        | 0.0446 | 0.0920 |
 
 Finallly, some highlights of the model's performance can be seen:
 
