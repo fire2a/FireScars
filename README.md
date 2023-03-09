@@ -27,8 +27,9 @@ Within the Convolutional Neural Network (CNN), the model U Net was selected for 
 
 ### Results
 
-<img src="Images/Results.jpg" width="401" height="208">
+In the Table 1 can be seen the results for each model, AS and 128.
 
+<img src="Images/Results.jpg" width="642" height="333">
 
 Finallly, some highlights of the model's performance can be seen:
 
