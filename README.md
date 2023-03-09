@@ -1,5 +1,8 @@
-# Automatic_Fire_Scars_Mapping
-### Project on automatic recognition of fire scars using LANDSAT's satellite imagery applying the U-Net model
+# Automatic burned area mapping approach using Deep Learning 
+
+#### Ian Wulff-Limongi, Cristobal Pais, Jaime Carrasco, Alejandro Miranda and Andres Weintraub
+
+#### Project on automatic recognition of fire scars using LANDSAT's satellite imagery applying the U-Net model
 
 ### Abstract
 
