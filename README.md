@@ -7,9 +7,9 @@ Two specific datasets were constructed from The Landscape Fire Scars Database, t
 
 Within the Convolutional Neural Network (CNN), the model U Net was selected for the prediction of the burned areas.
 
-<img src="Images/u_net.jpg" width="566" height="290">
+<img src="Images/u_net.jpg" width="755" height="387">
 
 Finallly, some highlights of the model's performance can be seen.
 
-<img src="Images/performance_sum.jpg" width="336" height="352">
+<img src="Images/performance_sum.jpg" width="732" height="704">
 
