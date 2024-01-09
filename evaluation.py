@@ -26,11 +26,10 @@ from tqdm.autonotebook import tqdm
 
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import jaccard_score
-from model_u_net import *
-from parameters import *
-from train128 import create_dataset128
-from trainAS import create_datasetAS
-
+from model_u_net import DoubleConv, Down, Up, OutConv, UNet
+from parameters import LS_max_as, LI_min_as, mean_as, std_as, min_as, max_as, LS_max128, LI_min128, mean_128, std_128, min_128, max_128
+from train128copia import create_dataset128
+from trainAScopia import create_datasetAS
 
 # #### Libraries and Data
 
