@@ -15,30 +15,7 @@ import rasterio as rio
 import os
 from osgeo import gdal
 from scipy.interpolate import NearestNDInterpolator
-
-def get_train128_args():
-    parser = argparse.ArgumentParser(description='Argument parser for train128copia.py')
-    parser.add_argument('-ep', type=int, default=25, help='Number of epochs')
-    parser.add_argument('-bs', type=int, default=16, help='Batch size')
-    parser.add_argument('-lr', type=float, default=0.0001, help='Learning rate')
-    return parser.parse_args()
-
-def create_dataset128(*args, apply_transforms=True, **kwargs):
-        """Create a dataset; uses same input parameters as PowerPlantDataset.
-        :param apply_transforms: if `True`, apply available transformations
-        :return: data set"""
-        if apply_transforms:
-            data_transforms = transforms.Compose([
-                Normalize(),
-                Randomize(),
-                ToTensor()
-            ])
-        else:
-            data_transforms = None
-
-        data = firescardataset(*args, **kwargs,
-                                            transform=data_transforms)
-        return data
+from arguments import get_train128_args
         
 data_train=data_train1=data_train2=data_val=data_val1=data_val2=pd.DataFrame()  #comment by introducing corresponding data
 
@@ -241,6 +218,24 @@ class Normalize(object):
         sample['img'].shape[0], 1, 1))/self.channel_std.reshape(
         sample['img'].shape[0], 1, 1)
         return sample 
+
+def create_dataset128(*args, apply_transforms=True, **kwargs):
+        """Create a dataset; uses same input parameters as PowerPlantDataset.
+        :param apply_transforms: if `True`, apply available transformations
+        :return: data set"""
+        if apply_transforms:
+            data_transforms = transforms.Compose([
+                Normalize(),
+                Randomize(),
+                ToTensor()
+            ])
+        else:
+            data_transforms = None
+
+        data = firescardataset(*args, **kwargs,
+                                            transform=data_transforms)
+        return data
+
 # -
 
 # #### Training
@@ -466,9 +461,5 @@ if __name__ == '__main__':
     '''
     # run training
 
-
-
     train_model(model, args.ep, opt, loss, args.bs, 1)
     writer.close()
-
-

@@ -7,7 +7,6 @@ from torch.utils.data import DataLoader, random_split, RandomSampler
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 from torchvision.transforms import Normalize
-import argparse
 from sklearn.metrics import jaccard_score
 from model_u_net import DoubleConv, Down, Up, OutConv, UNet, model
 from parameters import LS_max_as, LI_min_as, mean_as, std_as, min_as, max_as, LS_max128, LI_min128, mean_128, std_128, min_128, max_128
@@ -16,36 +15,7 @@ import rasterio as rio
 import os
 from osgeo import gdal
 from scipy.interpolate import NearestNDInterpolator
-# trainAScopia.py
-
-import argparse
-
-def get_trainAS_args():
-    parser = argparse.ArgumentParser(description='Argument parser for trainAScopia.py')
-    parser.add_argument('-ep', type=int, default=25, help='Number of epochs')
-    parser.add_argument('-bs', type=int, default=16, help='Batch size')
-    parser.add_argument('-lr', type=float, default=0.0001, help='Learning rate')
-    return parser.parse_args()
-
-def create_datasetAS(*args, apply_transforms=True, **kwargs):
-        """
-        Create a dataset; uses same input parameters as PowerPlantDataset.
-        apply_transforms: if `True`, apply available transformation. Returns the data set
-        
-        """
-        if apply_transforms:
-            data_transforms = transforms.Compose([
-                Normalize(),
-                Randomize(),
-                ToTensor()
-            ])
-        else:
-            data_transforms = None
-
-        data = firescardataset(*args, **kwargs,
-                                            transform=data_transforms)
-
-        return data
+from arguments import get_trainAS_args
 
 data_train=data_train1=data_train2=data_val=data_val1=data_val2=pd.DataFrame()  #comment by introducing corresponding data
 
@@ -266,7 +236,27 @@ class Normalize(object):
         sample['img'].shape[0], 1, 1))/self.channel_std.reshape(
         sample['img'].shape[0], 1, 1)
         return sample 
+
+def create_datasetAS(*args, apply_transforms=True, **kwargs):
+        """
+        Create a dataset; uses same input parameters as PowerPlantDataset.
+        apply_transforms: if `True`, apply available transformation. Returns the data set
         
+        """
+        if apply_transforms:
+            data_transforms = transforms.Compose([
+                Normalize(),
+                Randomize(),
+                ToTensor()
+            ])
+        else:
+            data_transforms = None
+
+        data = firescardataset(*args, **kwargs,
+                                            transform=data_transforms)
+
+        return data
+
 # -
 
 # #### Training

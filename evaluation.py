@@ -1,19 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
-# Copyright (C) 2020 Michael Mommert
-# This file is part of IndustrialSmokePlumeDetection
-# <https://github.com/HSG-AIML/IndustrialSmokePlumeDetection>. 
-# See:   Mommert, M., Sigel, M., Neuhausler, M., Scheibenreif, L., Borth, D.,
-#   "Characterization of Industrial Smoke Plumes from Remote Sensing Data",
-#   Tackling Climate Change with Machine Learning workshop at NeurIPS 2020. 
-
-
-# In[ ]:
-
 import os
 import numpy as np
 import pandas as pd
@@ -22,38 +6,23 @@ from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
 from tqdm.autonotebook import tqdm
-
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import jaccard_score
 from model_u_net import DoubleConv, Down, Up, OutConv, UNet, model
 from parameters import LS_max_as, LI_min_as, mean_as, std_as, min_as, max_as, LS_max128, LI_min128, mean_128, std_128, min_128, max_128
 from train128 import create_dataset128
 from trainAS import create_datasetAS
-import sys
-# #### Libraries and Data
 import argparse
-# In[ ]:
+from arguments import get_evaluation_args
+
 #ejecución desde la linea de comandos 
 #python evaluation.py -ev1 "../datasets_csv_11_2023/val_test_97.csv" -ev2 "../datasets_csv_11_2023/bio_test_98.csv" -mp "../modelos/ep25_lr1e-04_bs16_021__as_std_adam_f01_13_07_x3.model"
-
-def get_evaluation_args():
-    parser = argparse.ArgumentParser(description='Arguments for evaluation')
-    parser.add_argument('-ev1', type=str, help='Path to dataset CSV for evaluation 1')
-    parser.add_argument('-ev2', type=str, help='Path to dataset CSV for evaluation 2')
-    parser.add_argument('-mp', type=str, help='Path to the trained model')
-    return parser.parse_args()
 
 if __name__ == '__main__':
     args = get_evaluation_args()
     evald1=evald2=dataset=pd.DataFrame()
     print(f'ev1: {args.ev1}, ev2: {args.ev2}, mp: {args.mp}')
-# In[ ]:
-'''
-args2 = parse_args(sys.argv[1:])
-evald1 = pd.read_csv(args2.data_eval_1_path)
-evald2 = pd.read_csv(args2.data_eval_2_path) #if args.data_eval_2_path else pd.DataFrame()
-model_path = args2.model_path
-'''
+
 '''
 evald1=pd.read_csv("../datasets_csv_11_2023/val_test_97.csv")
 evald2=pd.read_csv("../datasets_csv_11_2023/bio_test_98.csv")
@@ -64,24 +33,13 @@ evald2=pd.read_csv(args.ev2)
 dataset=pd.concat([evald1,evald2],axis=0,ignore_index=True)
 photo_results_path = "C:/Users/56965/Documents/TesisIan/agostoy2023november/copia_diego_2023_paper_november/evaluation_results/"
 
-# In[ ]:
-
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
-# In[ ]:
-
 
 # Loads a model of a specific epoch to evaluate
 #AS model
 #model_path="../modelos/ep25_lr1e-04_bs16_021__as_std_adam_f01_13_07_x3.model"
 #model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 model.load_state_dict(torch.load(args.mp, map_location=torch.device('cpu')))
-
-
-# #### Evaluation
-
-# In[ ]:
-
 
 def evaluation(model_size):
     """
@@ -174,7 +132,6 @@ def evaluation(model_size):
         output_binary[output.cpu().detach().numpy() >= 0] = 1
 
         if batch_size == 1:
-
             if prediction == 1 and y_bin == 1:
                 res = 'true_pos'
             elif prediction == 0 and y_bin == 0:
@@ -250,16 +207,6 @@ def evaluation(model_size):
     print('iou:', len(all_ious), np.average(all_ious))
     return test_df
 
-
-# In[ ]:
-
-
-# %%capture
 test_df=evaluation("AS")
 
-
-# In[ ]:
-
-
 print('DC',test_df["DC"].mean(),'OE', test_df["OE"].mean(),'CE',test_df["CE"].mean())
-
