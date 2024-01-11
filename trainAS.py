@@ -15,7 +15,7 @@ import rasterio as rio
 import os
 from osgeo import gdal
 from scipy.interpolate import NearestNDInterpolator
-from arguments import get_trainAS_args
+from arguments import get_train_args
 
 data_train=data_train1=data_train2=data_val=data_val1=data_val2=pd.DataFrame()  #comment by introducing corresponding data
 
@@ -459,7 +459,7 @@ def train_model(model, epochs, opt, loss, batch_size, mult):
 # +
 
 if __name__ == '__main__':
-    args = get_trainAS_args()
+    args = get_train_args()
     print(f'ep: {args.ep}, bs: {args.bs}, lr: {args.lr}')
 
     # setup tensorboard writer
