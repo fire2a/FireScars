@@ -6,7 +6,6 @@ from sklearn.metrics import accuracy_score
 from torch.utils.data import DataLoader, random_split, RandomSampler
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
-import argparse
 from sklearn.metrics import jaccard_score
 from model_u_net import DoubleConv, Down, Up, OutConv, UNet, model
 from parameters import LS_max_as, LI_min_as, mean_as, std_as, min_as, max_as, LS_max128, LI_min128, mean_128, std_128, min_128, max_128

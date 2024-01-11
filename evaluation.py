@@ -12,26 +12,37 @@ from model_u_net import DoubleConv, Down, Up, OutConv, UNet, model
 from parameters import LS_max_as, LI_min_as, mean_as, std_as, min_as, max_as, LS_max128, LI_min128, mean_128, std_128, min_128, max_128
 from train128 import create_dataset128
 from trainAS import create_datasetAS
-import argparse
 from arguments import get_evaluation_args
-
+import re
 #ejecución desde la linea de comandos 
 #python evaluation.py -ev1 "../datasets_csv_11_2023/val_test_97.csv" -ev2 "../datasets_csv_11_2023/bio_test_98.csv" -mp "../modelos/ep25_lr1e-04_bs16_021__as_std_adam_f01_13_07_x3.model"
+
+def obtain_model_size(input_str):
+    # Define el patrón de búsqueda para '128' y 'as' en las posiciones específicas
+    patron_128 = re.compile(r'_\d+_(\d+)_')
+    patron_as = re.compile(r'_(as)_')
+    # Busca el patrón en la cadena
+    coincidencia_128 = patron_128.search(input_str)
+    coincidencia_as = patron_as.search(input_str)
+    # Asigna los valores a las variables según las coincidencias
+    valor_128 = coincidencia_128.group(1) if coincidencia_128 else None
+    valor_as = coincidencia_as.group(1) if coincidencia_as else None
+    return valor_128, valor_as
 
 if __name__ == '__main__':
     args = get_evaluation_args()
     evald1=evald2=dataset=pd.DataFrame()
     print(f'ev1: {args.ev1}, ev2: {args.ev2}, mp: {args.mp}')
 
-'''
-evald1=pd.read_csv("../datasets_csv_11_2023/val_test_97.csv")
-evald2=pd.read_csv("../datasets_csv_11_2023/bio_test_98.csv")
-dataset=pd.concat([evald1,evald2],axis=0,ignore_index=True)  
-'''
 evald1=pd.read_csv(args.ev1)
 evald2=pd.read_csv(args.ev2)
 dataset=pd.concat([evald1,evald2],axis=0,ignore_index=True)
 photo_results_path = "C:/Users/56965/Documents/TesisIan/agostoy2023november/copia_diego_2023_paper_november/evaluation_results/"
+
+if obtain_model_size(args.mp)[0] == "128":
+    model_size = "128"
+elif obtain_model_size(args.mp)[1] == "as":
+    model_size = "AS"
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -207,6 +218,6 @@ def evaluation(model_size):
     print('iou:', len(all_ious), np.average(all_ious))
     return test_df
 
-test_df=evaluation("AS")
+test_df=evaluation(model_size)
 
 print('DC',test_df["DC"].mean(),'OE', test_df["OE"].mean(),'CE',test_df["CE"].mean())
