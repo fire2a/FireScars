@@ -1,28 +1,3 @@
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: light
-#       format_version: '1.5'
-#       jupytext_version: 1.15.2
-#   kernelspec:
-#     display_name: Python 3 (ipykernel)
-#     language: python
-#     name: python3
-# ---
-
-# +
-# Copyright (C) 2020 Michael Mommert
-# This file is part of IndustrialSmokePlumeDetection
-# <https://github.com/HSG-AIML/IndustrialSmokePlumeDetection>. 
-# See:   Mommert, M., Sigel, M., Neuhausler, M., Scheibenreif, L., Borth, D.,
-#   "Characterization of Industrial Smoke Plumes from Remote Sensing Data",
-#   Tackling Climate Change with Machine Learning workshop at NeurIPS 2020.
-# -
-
-# #### Libraries and Data
-
 import numpy as np
 import torch
 from torch import nn, optim
@@ -31,19 +6,48 @@ from sklearn.metrics import accuracy_score
 from torch.utils.data import DataLoader, random_split, RandomSampler
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
+from torchvision.transforms import Normalize
 import argparse
 from sklearn.metrics import jaccard_score
-from model_u_net import *
-from parameters import *
-
+from model_u_net import DoubleConv, Down, Up, OutConv, UNet, model
+from parameters import LS_max_as, LI_min_as, mean_as, std_as, min_as, max_as, LS_max128, LI_min128, mean_128, std_128, min_128, max_128
 import pandas as pd
 import rasterio as rio 
 import os
 from osgeo import gdal
 from scipy.interpolate import NearestNDInterpolator
+# trainAScopia.py
+
+import argparse
+
+def get_trainAS_args():
+    parser = argparse.ArgumentParser(description='Argument parser for trainAScopia.py')
+    parser.add_argument('-ep', type=int, default=25, help='Number of epochs')
+    parser.add_argument('-bs', type=int, default=16, help='Batch size')
+    parser.add_argument('-lr', type=float, default=0.0001, help='Learning rate')
+    return parser.parse_args()
+
+def create_datasetAS(*args, apply_transforms=True, **kwargs):
+        """
+        Create a dataset; uses same input parameters as PowerPlantDataset.
+        apply_transforms: if `True`, apply available transformation. Returns the data set
+        
+        """
+        if apply_transforms:
+            data_transforms = transforms.Compose([
+                Normalize(),
+                Randomize(),
+                ToTensor()
+            ])
+        else:
+            data_transforms = None
+
+        data = firescardataset(*args, **kwargs,
+                                            transform=data_transforms)
+
+        return data
 
 data_train=data_train1=data_train2=data_val=data_val1=data_val2=pd.DataFrame()  #comment by introducing corresponding data
-
 
 # +
 # when there is one dataset 
@@ -55,14 +59,15 @@ data_train=data_train1=data_train2=data_val=data_val1=data_val2=pd.DataFrame()  
 
 
 # when there are two datasets to analyze
-
-data_train1=pd.read_csv("datasets_csv_11_2023/val_train_684.csv")
-data_train2=pd.read_csv("datasets_csv_11_2023/bio_train_693.csv")  
+'''
+data_train1=pd.read_csv("../datasets_csv_11_2023/val_train_684.csv")
+data_train2=pd.read_csv("../datasets_csv_11_2023/bio_train_693.csv")  
 data_train=pd.concat([data_train1,data_train2], axis=0, ignore_index=True)
 
-data_val1=pd.read_csv("datasets_csv_11_2023/val_val_196.csv")
-data_val2=pd.read_csv("datasets_csv_11_2023/bio_val_198.csv")  
+data_val1=pd.read_csv("../datasets_csv_11_2023/val_val_196.csv")
+data_val2=pd.read_csv("../datasets_csv_11_2023/bio_val_198.csv")  
 data_val=pd.concat([data_val1,data_val2], axis=0, ignore_index=True)
+'''
 # -
 
 def preprocessing(imgdata):
@@ -114,16 +119,16 @@ class firescardataset():
         self.seglabels = []
         imgposfiles = []
         # read in segmentation label files
-        
+       
         for i in range(ss1,ss2):
-            self.seglabels.append(os.path.join("Imagenes_y_data/firescarvalpoallsizes/FireScar/", dataset.loc[i,"FireScar_tif"]))
-            self.imgfiles.append(os.path.join("Imagenes_y_data/firescarvalpoallsizes/ImgPosF/",dataset.loc[i,"ImgPosF"]))
-            self.imgprefiles.append(os.path.join("Imagenes_y_data/firescarvalpoallsizes/ImgPreF/",dataset.loc[i,"ImgPreF"]))
+            self.seglabels.append(os.path.join("../../IanMancilla/firescarvalpoallsizes/FireScar/", dataset.loc[i,"FireScar_tif"]))
+            self.imgfiles.append(os.path.join("../../IanMancilla/firescarvalpoallsizes/ImgPosF/",dataset.loc[i,"ImgPosF"]))
+            self.imgprefiles.append(os.path.join("../../IanMancilla/firescarvalpoallsizes/ImgPreF/",dataset.loc[i,"ImgPreF"]))
         
         for i in range(ss3,ss4):
-            self.seglabels.append(os.path.join("Imagenes_y_data/firescarbiobioallsizes/FireScar/",dataset.loc[i,"FireScar_tif"]))
-            self.imgfiles.append(os.path.join("Imagenes_y_data/firescarbiobioallsizes/ImgPosF/",dataset.loc[i,"ImgPosF"]))
-            self.imgprefiles.append(os.path.join("Imagenes_y_data/firescarbiobioallsizes/ImgPreF/",dataset.loc[i,"ImgPreF"]))
+            self.seglabels.append(os.path.join("../../IanMancilla/firescarbiobioallsizes/FireScar/",dataset.loc[i,"FireScar_tif"]))
+            self.imgfiles.append(os.path.join("../../IanMancilla/firescarbiobioallsizes/ImgPosF/",dataset.loc[i,"ImgPosF"]))
+            self.imgprefiles.append(os.path.join("../../IanMancilla/firescarbiobioallsizes/ImgPreF/",dataset.loc[i,"ImgPreF"]))
         
         self.imgfiles = np.array(self.imgfiles)
         self.imgprefiles=np.array(self.imgprefiles)
@@ -186,75 +191,13 @@ class firescardataset():
                 myarray=np.pad(myarray, ((int((size-x)/2),int((size-x)/2)),(int((size-y)/2),int((size-y)/2))), "constant") #wh
     
         sample = {'idx': idx,
-              'img': new_array,
-              'fpt': myarray,
-              'imgfile': self.imgfiles[idx]}
+            'img': new_array,
+            'fpt': myarray,
+            'imgfile': self.imgfiles[idx]}
         if self.transform:
             sample = self.transform(sample)
         return sample
-#     def __getitem__(self, idx):
-#         """
-#         Accesses to the input's data and adapts the format to a matrix of the concatenated bands' values of both the pre and post-fire images. 
-#         Afterwards, also padding and preprocessing are applied to the data. 
-#         Returns a dictionary of the image's data and the values.
 
-#         idx (int): index of the input to access to. They are given iteratively for a given search.
-        
-#         """
-#         idx=idx-1
-#         imgfile = rio.open(self.imgfiles[idx])
-#         imgpre=rio.open(self.imgprefiles[idx])
-#         imgdata1 = np.array([imgfile.read(i) for i in [1,2,3,4,5,6,7,8]])
-#         imgdatapre=np.array([imgpre.read(i) for i in [1,2,3,4,5,6,7,8]])
-#         new_array=np.concatenate((imgdata1, imgdatapre), axis=0)
-
-#         ds = gdal.Open(self.seglabels[idx])
-#         myarray = np.array(ds.GetRasterBand(1).ReadAsArray())
-
-#         if (np.isfinite(new_array)==False).any(): #Replace nan for the neighbours mean values
-#             mask=np.where(np.isfinite(new_array))
-#             interp=NearestNDInterpolator(np.transpose(mask), new_array[mask])
-#             new_array=interp(*np.indices(new_array.shape))
-            
-#         new_array=preprocessing(new_array)
-
-#         ds = gdal.Open(self.seglabels[idx])
-#         myarray = np.array(ds.GetRasterBand(1).ReadAsArray())
-
-#         x=imgdata1.shape[1]
-#         y=imgdata1.shape[2]
-#         imgdata=new_array
-
-#         size=128
-#         if (x<size or y<size):
-#             if (x%2==1 and y%2==1): #if it's odd
-#                 new_array=np.pad(imgdata, ((0,0),(int((size-x)/2-1/2),int((size-x)/2+1/2)),(int((size-y)/2+1/2),int((size-y)/2-1/2))), "constant") #when it's odd, the padd goes 1 additional space left or down depending on the odd axis
-#             elif (x%2==1 and y%2==0):
-#                 new_array=np.pad(imgdata, ((0,0),(int((size-x)/2-1/2),int((size-x)/2+1/2)),(int((size-y)/2),int((size-y)/2))), "constant") #when it's odd, the padd goes 1 additional space left or down depending on the odd axis
-#             elif (x%2==0 and y%2==1):
-#                 new_array=np.pad(imgdata, ((0,0),(int((size-x)/2),int((size-x)/2)),(int((size-y)/2+1/2),int((size-y)/2-1/2))), "constant") #when it's odd, the padd goes 1 additional space left or down depending on the odd axis
-#             elif (x%2==0 and y%2==0):
-#                 new_array=np.pad(imgdata, ((0,0),(int((size-x)/2),int((size-x)/2)),(int((size-y)/2),int((size-y)/2))), "constant") #wh
-
-#         x,y=myarray.shape
-
-#         if (x<size or y<size):
-#             if (x%2==1 and y%2==1): #if it's odd
-#                 myarray=np.pad(myarray, ((int((size-x)/2-1/2),int((size-x)/2+1/2)),(int((size-y)/2+1/2),int((size-y)/2-1/2))), "constant") #when it's odd, the padd goes 1 additional space left or down depending on the odd axis
-#             elif (x%2==1 and y%2==0):
-#                 myarray=np.pad(myarray, ((int((size-x)/2-1/2),int((size-x)/2+1/2)),(int((size-y)/2),int((size-y)/2))), "constant") #when it's odd, the padd goes 1 additional space left or down depending on the odd axis
-#             elif (x%2==0 and y%2==1):
-#                 myarray=np.pad(myarray, ((int((size-x)/2),int((size-x)/2)),(int((size-y)/2+1/2),int((size-y)/2-1/2))), "constant") #when it's odd, the padd goes 1 additional space left or down depending on the odd axis
-#             elif (x%2==0 and y%2==0):
-#                 myarray=np.pad(myarray, ((int((size-x)/2),int((size-x)/2)),(int((size-y)/2),int((size-y)/2))), "constant") #wh
-    
-#         sample = {'idx': idx,
-#               'img': new_array,
-#               'fpt': myarray,
-#               'imgfile': self.imgfiles[idx]}
-#         if self.transform:
-#             sample = self.transform(sample)
-#         return sample
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
     def __call__(self, sample):
@@ -270,6 +213,7 @@ class ToTensor(object):
         'imgfile': sample['imgfile']}
 
         return out
+    
 class Randomize(object):
     """Randomize image orientation including rotations by integer multiples of
     90 deg, (horizontal) mirroring, and (vertical) flipping."""
@@ -303,6 +247,7 @@ class Randomize(object):
                 'img': imgdata.copy(),
                 'fpt': fptdata.copy(),
                 'imgfile': sample['imgfile']}
+    
 class Normalize(object):
     """Normalize pixel values to the range [0, 1] measured using minmax-scaling"""    
     def __init__(self):
@@ -322,27 +267,6 @@ class Normalize(object):
         sample['img'].shape[0], 1, 1)
         return sample 
         
-def create_datasetAS(*args, apply_transforms=True, **kwargs):
-    """
-    Create a dataset; uses same input parameters as PowerPlantDataset.
-    apply_transforms: if `True`, apply available transformation. Returns the data set
-    
-    """
-    if apply_transforms:
-        data_transforms = transforms.Compose([
-            Normalize(),
-            Randomize(),
-            ToTensor()
-           ])
-    else:
-        data_transforms = None
-
-    data = firescardataset(*args, **kwargs,
-                                         transform=data_transforms)
-
-    return data
-
-
 # -
 
 # #### Training
@@ -367,7 +291,7 @@ def train_model(model, epochs, opt, loss, batch_size, mult):
     # ss1_v, ss2_v (int): indexes Dataset 1 for the validation
     # ss3_v, ss4_v (int): indexes Datset 2 for the validation
     data_train_ = create_datasetAS(data_train, 0, len(data_train1),
-                 len(data_train1),len(data_train1)+len(data_train2), mult=1)
+                len(data_train1),len(data_train1)+len(data_train2), mult=1)
     data_val_ = create_datasetAS(data_val, 0, len(data_val1), len(data_val1), len(data_val1)+len(data_val2), mult=1)
     train_dl = DataLoader(data_train_, batch_size, num_workers=0, pin_memory=True) #drop_last=True)
     val_dl = DataLoader(data_val_, batch_size, num_workers=0, pin_memory=True) # drop_last=True)  
@@ -415,7 +339,7 @@ def train_model(model, epochs, opt, loss, batch_size, mult):
             # derive IoU values            
             for j in range(y.shape[0]):                                       
                 z = jaccard_score(y[j].flatten().cpu().detach().numpy(),        
-                          output_binary[j][0].flatten())
+                        output_binary[j][0].flatten())
                 if (np.sum(output_binary[j][0]) != 0 and
                     np.sum(y[j].cpu().detach().numpy()) != 0):
                     train_ious.append(z)
@@ -428,7 +352,7 @@ def train_model(model, epochs, opt, loss, batch_size, mult):
             y_bin = np.array(np.sum(y.cpu().detach().numpy(),
                                     axis=(1,2)) != 0).astype(int)
             pred_bin = np.array(np.sum(output_binary,
-                                      axis=(1,2,3)) != 0).astype(int)
+                                    axis=(1,2,3)) != 0).astype(int)
 
             # derive image-wise accuracy for this batch
             #train_acc_total += accuracy_score(y_bin, pred_bin)
@@ -466,21 +390,21 @@ def train_model(model, epochs, opt, loss, batch_size, mult):
         
         progress = tqdm(enumerate(val_dl), desc="val Loss: ",
                         total=len(val_dl))
-                          
+                        
         for j, batch in progress:
             x = batch['img'].float().to(device)
             y = batch['fpt'].float().to(device)
             output = model(x)
 
-          # derive loss
+        # derive loss
             loss_epoch = loss(output, y.unsqueeze(dim=1))
             val_loss_total += loss_epoch.item()
 
-          # derive binary segmentation map from prediction
+        # derive binary segmentation map from prediction
             output_binary = np.zeros(output.shape)
             output_binary[output.cpu().detach().numpy() >= 0] = 1
 
-          # derive IoU values
+        # derive IoU values
             ious = []
             for k in range(y.shape[0]):
                 z = jaccard_score(y[k].flatten().cpu().detach().numpy(),
@@ -492,18 +416,18 @@ def train_model(model, epochs, opt, loss, batch_size, mult):
                     FN_eval.append(((output_binary.squeeze()==0) & (y.cpu().detach().numpy().squeeze()==1)).sum())
                     FP_eval.append(((output_binary.squeeze()==1) & (y.cpu().detach().numpy().squeeze()==0)).sum())
                     dicec_eval_acc.append(dice2d(output_binary,y.cpu().detach().numpy()))
-                   
-          # derive scalar binary labels on a per-image basis
+                
+        # derive scalar binary labels on a per-image basis
             y_bin = np.array(np.sum(y.cpu().detach().numpy(),
-                                  axis=(1,2)) != 0).astype(int)
+                                axis=(1,2)) != 0).astype(int)
             pred_bin = np.array(np.sum(output_binary,
-                                      axis=(1,2,3)) != 0).astype(int)
+                                    axis=(1,2,3)) != 0).astype(int)
 
-          # derive image-wise accuracy for this batch
-          #val_acc_total += accuracy_score(y_bin, pred_bin)
+        # derive image-wise accuracy for this batch
+        #val_acc_total += accuracy_score(y_bin, pred_bin)
             
             progress.set_description("val Loss: {:.4f}".format(
-             val_loss_total/(j+1)))
+            val_loss_total/(j+1)))
 
         # logging
         writer.add_scalar("val DC", np.average(dicec_eval_acc),epoch)
@@ -515,10 +439,10 @@ def train_model(model, epochs, opt, loss, batch_size, mult):
 
 
         print(("Epoch {:d}: train loss={:.3f}, val loss={:.3f}, "
-               "train iou={:.3f}, val iou={:.3f}, "
-               "DC training={:.3f}, val DC={:.3f}").format(
-                   epoch+1, train_loss_total/(i+1), val_loss_total/(j+1),
-                   np.average(train_ious), np.average(val_ious),np.average(dicec_train_acc),
+            "train iou={:.3f}, val iou={:.3f}, "
+            "DC training={:.3f}, val DC={:.3f}").format(
+                epoch+1, train_loss_total/(i+1), val_loss_total/(j+1),
+                np.average(train_ious), np.average(val_ious),np.average(dicec_train_acc),
                     np.average(dicec_eval_acc)))
 
         if (val_loss_total/(j+1))<best_model["val_loss_total"]:
@@ -543,40 +467,33 @@ def train_model(model, epochs, opt, loss, batch_size, mult):
     return model
 
 # +
-# setup argument parser
-parser = argparse.ArgumentParser()
-parser.add_argument('-f')
 
-parser.add_argument('-ep', type=int, default=25,    
-                    help='Number of epochs')
-parser.add_argument('-bs', type=int, nargs='?',             
-                    default=16, help='Batch size')
-parser.add_argument('-lr', type=float,
-                    nargs='?', default=0.0001, help='Learning rate')
-# parser.add_argument('-mo', type=float,
-#                     nargs='?', default=0.7, help='Momentum')    #for SGD optimizer
-args = parser.parse_args()
+if __name__ == '__main__':
+    args = get_trainAS_args()
+    print(f'ep: {args.ep}, bs: {args.bs}, lr: {args.lr}')
 
+    # setup tensorboard writer
+    writer = SummaryWriter('U_Net/runs/'+"ep{:0d}_lr{:.0e}_bs{:03d}/".format(
+        args.ep, args.lr, args.bs))
 
-# setup tensorboard writer
-writer = SummaryWriter('U_Net/runs/'+"ep{:0d}_lr{:.0e}_bs{:03d}/".format(
-    args.ep, args.lr, args.bs))
+    # initialize loss function
+    loss = nn.BCEWithLogitsLoss()
 
-# initialize loss function
-loss = nn.BCEWithLogitsLoss()
+    # initialize optimizer
+    # opt = optim.SGD(model.parameters(), lr=args.lr, momentum=args.mo) #for SGD optimizer
+    opt = optim.Adam(model.parameters(), lr=args.lr)
 
-# initialize optimizer
-# opt = optim.SGD(model.parameters(), lr=args.lr, momentum=args.mo) #for SGD optimizer
-opt = optim.Adam(model.parameters(), lr=args.lr)
+    # initialize scheduler
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(opt, 'min',
+                                                    factor=0.5, threshold=1e-4,
+                                                    min_lr=1e-6)
+    # -
+    '''
+    model_path="/modelos/ep25_lr1e-04_bs16_021__as_std_adam_f01_13_07_x3.model"
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    '''
+    # run training
 
-# initialize scheduler
-scheduler = optim.lr_scheduler.ReduceLROnPlateau(opt, 'min',
-                                                 factor=0.5, threshold=1e-4,
-                                                 min_lr=1e-6)
-# -
-# run training
-# model.load_state_dict(torch.load(
-#  "path/filename" , map_location=torch.device('cpu')))
-if __name__=="main":
     train_model(model, args.ep, opt, loss, args.bs, 1)
     writer.close()
+        

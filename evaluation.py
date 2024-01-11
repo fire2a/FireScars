@@ -14,7 +14,6 @@
 
 # In[ ]:
 
-
 import os
 import numpy as np
 import pandas as pd
@@ -30,34 +29,53 @@ from model_u_net import DoubleConv, Down, Up, OutConv, UNet, model
 from parameters import LS_max_as, LI_min_as, mean_as, std_as, min_as, max_as, LS_max128, LI_min128, mean_128, std_128, min_128, max_128
 from train128 import create_dataset128
 from trainAS import create_datasetAS
-
+import sys
 # #### Libraries and Data
+import argparse
+# In[ ]:
+#ejecución desde la linea de comandos 
+#python evaluation.py -ev1 "../datasets_csv_11_2023/val_test_97.csv" -ev2 "../datasets_csv_11_2023/bio_test_98.csv" -mp "../modelos/ep25_lr1e-04_bs16_021__as_std_adam_f01_13_07_x3.model"
+
+def get_evaluation_args():
+    parser = argparse.ArgumentParser(description='Arguments for evaluation')
+    parser.add_argument('-ev1', type=str, help='Path to dataset CSV for evaluation 1')
+    parser.add_argument('-ev2', type=str, help='Path to dataset CSV for evaluation 2')
+    parser.add_argument('-mp', type=str, help='Path to the trained model')
+    return parser.parse_args()
+
+if __name__ == '__main__':
+    args = get_evaluation_args()
+    evald1=evald2=dataset=pd.DataFrame()
+    print(f'ev1: {args.ev1}, ev2: {args.ev2}, mp: {args.mp}')
+# In[ ]:
+'''
+args2 = parse_args(sys.argv[1:])
+evald1 = pd.read_csv(args2.data_eval_1_path)
+evald2 = pd.read_csv(args2.data_eval_2_path) #if args.data_eval_2_path else pd.DataFrame()
+model_path = args2.model_path
+'''
+'''
+evald1=pd.read_csv("../datasets_csv_11_2023/val_test_97.csv")
+evald2=pd.read_csv("../datasets_csv_11_2023/bio_test_98.csv")
+dataset=pd.concat([evald1,evald2],axis=0,ignore_index=True)  
+'''
+evald1=pd.read_csv(args.ev1)
+evald2=pd.read_csv(args.ev2)
+dataset=pd.concat([evald1,evald2],axis=0,ignore_index=True)
+photo_results_path = "C:/Users/56965/Documents/TesisIan/agostoy2023november/copia_diego_2023_paper_november/evaluation_results/"
 
 # In[ ]:
-
-
-evald1=evald2=dataset=pd.DataFrame()
-
-
-# In[ ]:
-
-evald1=pd.read_csv("datasets_csv_11_2023/val_test_97.csv")
-evald2=pd.read_csv("datasets_csv_11_2023/bio_test_98.csv")
-dataset=pd.concat([evald1,evald2],axis=0,ignore_index=True)   
-
-# In[ ]:
-
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
 
 # In[ ]:
 
 
 # Loads a model of a specific epoch to evaluate
 #AS model
-path="modelos/ep25_lr1e-04_bs16_021__as_std_adam_f01_13_07_x3.model"
-model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
+#model_path="../modelos/ep25_lr1e-04_bs16_021__as_std_adam_f01_13_07_x3.model"
+#model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+model.load_state_dict(torch.load(args.mp, map_location=torch.device('cpu')))
 
 
 # #### Evaluation
@@ -136,7 +154,7 @@ def evaluation(model_size):
         cropped_iou = []
         for j in range(y.shape[0]):
             z = jaccard_score(y[j].flatten().cpu().detach().numpy(),
-                              pred[j][0].flatten())
+                            pred[j][0].flatten())
             if (np.sum(pred[j][0]) != 0 and
                 np.sum(y[j].cpu().detach().numpy()) != 0):
                 cropped_iou.append(z)       
@@ -147,7 +165,7 @@ def evaluation(model_size):
         y_bin = np.array(np.sum(y.cpu().detach().numpy(),
                                 axis=(1,2)) != 0).astype(int)
         prediction = np.array(np.sum(pred,
-                                   axis=(1,2,3)) != 0).astype(int)
+                                axis=(1,2,3)) != 0).astype(int)
         # derive image-wise accuracy for this batch
         all_accs.append(accuracy_score(y_bin, prediction))
 
@@ -175,10 +193,10 @@ def evaluation(model_size):
             test_df.loc[cont,"ImgPosF"]=(batch['imgfile'][0].split("/")[-1])
             OE=FN_eval[cont]/(TP_eval[cont]+FN_eval[cont])
             this_iou = jaccard_score(y[0].flatten().cpu().detach().numpy(),
-                                     pred[0][0].flatten())
+                                    pred[0][0].flatten())
             test_df.loc[i,"iou"]=this_iou        
 
-             # create plot
+            # create plot
             f, (ax1, ax2, ax3,ax4) = plt.subplots(1, 4, figsize=(20,20))
             x=x.cpu()
             y=y.cpu()
@@ -211,23 +229,23 @@ def evaluation(model_size):
             ax3.annotate("IoU={:.2f}".format(this_iou), xy=(5,15), fontsize=15)
 
             ax4.set_title({'true_pos': 'Scar Prediction: True Positive \n  -IoU={:.2f},' 
-                       '-OE={:.2f}, -CE={:.2f}, -DC={:.2F}'.format(this_iou, test_df.loc[cont,"OE"],test_df.loc[cont,"CE"],test_df.loc[cont,"DC"]),
-               'true_neg': 'Scar Prediction: True Negative \n  -IoU={:.2f},' 
+                    '-OE={:.2f}, -CE={:.2f}, -DC={:.2F}'.format(this_iou, test_df.loc[cont,"OE"],test_df.loc[cont,"CE"],test_df.loc[cont,"DC"]),
+            'true_neg': 'Scar Prediction: True Negative \n  -IoU={:.2f},' 
             '-OE={:.2f}, -CE={:.2f}, -DC={:.2F}'.format(this_iou,test_df.loc[cont,"OE"],test_df.loc[cont,"CE"],test_df.loc[cont,"DC"]),
-               'false_pos': 'Scar Prediction: False Positive   -IoU={:.2f},'
-             '-OE={:.2f}, -CE={:.2f}, -DC={:.2F}'.format(this_iou, test_df.loc[cont,"OE"],test_df.loc[cont,"CE"],test_df.loc[cont,"DC"]),
+            'false_pos': 'Scar Prediction: False Positive   -IoU={:.2f},'
+            '-OE={:.2f}, -CE={:.2f}, -DC={:.2F}'.format(this_iou, test_df.loc[cont,"OE"],test_df.loc[cont,"CE"],test_df.loc[cont,"DC"]),
                 'false_neg': 'Scar Prediction: False Negative \n  -IoU={:.2f},'
             '-OE={:.2f}, -CE={:.2f}, -DC={:.2F}'.format(this_iou,test_df.loc[cont,"OE"], 0,test_df.loc[cont,"DC"])}[res],
-                      fontsize=12)
+                    fontsize=12)
             cont+=1      
 
             f.subplots_adjust(0.05, 0.02, 0.95, 0.9, 0.05, 0.05)
-
-            # plt.savefig("../output_path/"+(os.path.split(batch['imgfile'][0])[1]).\
-            #             replace('.tif', '.extention.png').replace(':', '_'),
-            #              dpi=200)   
-
-#             plt.close()     #comment to display
+            '''
+            plt.savefig(photo_results_path+(os.path.split(batch['imgfile'][0])[1]).\
+                        replace('.tif', '.extention.png').replace(':', '_'),
+                        dpi=200)   
+            plt.close()     #comment to display
+            '''
     print('DC',test_df["DC"].mean(),'OE', test_df["OE"].mean(),'CE',test_df["CE"].mean())
     print('iou:', len(all_ious), np.average(all_ious))
     return test_df
