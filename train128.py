@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, random_split, RandomSampler
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 from sklearn.metrics import jaccard_score
-from model_u_net import DoubleConv, Down, Up, OutConv, UNet, model
+from model_u_net import DoubleConv, Down, Up, OutConv, UNet, model, device
 from parameters import LS_max_as, LI_min_as, mean_as, std_as, min_as, max_as, LS_max128, LI_min128, mean_128, std_128, min_128, max_128
 import pandas as pd
 import rasterio as rio 
@@ -27,7 +27,7 @@ data_train=data_train1=data_train2=data_val=data_val1=data_val2=pd.DataFrame()  
 #data_val2=pd.DataFrame()
 
 # when there are two datasets to analyze
-'''
+
 data_train1=pd.read_csv("datasets_csv_11_2023/val_train_684.csv")
 data_train2=pd.read_csv("datasets_csv_11_2023/bio_train_693.csv")  
 data_train=pd.concat([data_train1,data_train2], axis=0, ignore_index=True)
@@ -35,7 +35,7 @@ data_train=pd.concat([data_train1,data_train2], axis=0, ignore_index=True)
 data_val1=pd.read_csv("datasets_csv_11_2023/val_val_196.csv")
 data_val2=pd.read_csv("datasets_csv_11_2023/bio_val_198.csv")  
 data_val=pd.concat([data_val1,data_val2], axis=0, ignore_index=True)
-'''
+
 # +
 class firescardataset():
     def __init__(self, dataset, ss1, ss2, ss3, ss4, mult=1, transform=None):

@@ -173,7 +173,7 @@ def main(argv=None):
                 this_iou = jaccard_score(y[0].flatten().cpu().detach().numpy(),
                                         pred[0][0].flatten())
                 test_df.loc[i,"iou"]=this_iou        
-
+                #generated_matrix = pred[0][0]
                 # create plot
                 f, (ax1, ax2, ax3,ax4) = plt.subplots(1, 4, figsize=(20,20))
                 x=x.cpu()
