@@ -8,8 +8,8 @@ import torch.nn as nn
 from tqdm.autonotebook import tqdm
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import jaccard_score
-from model_u_net import DoubleConv, Down, Up, OutConv, UNet, model
-from parameters import LS_max_as, LI_min_as, mean_as, std_as, min_as, max_as, LS_max128, LI_min128, mean_128, std_128, min_128, max_128
+from model_u_net import model
+from parameters import photo_results_path
 from train128 import create_dataset128
 from trainAS import create_datasetAS
 from arguments import get_evaluation_args
@@ -43,7 +43,6 @@ def main(argv=None):
     evald1=pd.read_csv(args.ev1)
     evald2=pd.read_csv(args.ev2)
     dataset=pd.concat([evald1,evald2],axis=0,ignore_index=True)
-    photo_results_path = "C:/Users/56965/Documents/TesisIan/agostoy2023november/copia_diego_2023_paper_november/evaluation_results/"
 
     model_size = args.ms.upper()
     if not model_size:
@@ -52,13 +51,10 @@ def main(argv=None):
         elif obtain_model_size(args.mp)[1] == "as":
             model_size = "AS"
 
-
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     # Loads a model of a specific epoch to evaluate
-    #AS model
-    #model_path="../modelos/ep25_lr1e-04_bs16_021__as_std_adam_f01_13_07_x3.model"
-    #model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    
     model.load_state_dict(torch.load(args.mp, map_location=torch.device('cpu')))
 
     def evaluation(model_size):
@@ -174,6 +170,7 @@ def main(argv=None):
                                         pred[0][0].flatten())
                 test_df.loc[i,"iou"]=this_iou        
                 #generated_matrix = pred[0][0]
+                #print(f"{generated_matrix.shape=}")                
                 # create plot
                 f, (ax1, ax2, ax3,ax4) = plt.subplots(1, 4, figsize=(20,20))
                 x=x.cpu()
