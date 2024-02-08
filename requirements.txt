@@ -1,0 +1,13 @@
+numpy
+geopandas 
+rasterio 
+rioxarray 
+GDAL
+shapely
+matplotlib 
+scipy
+torch
+torchvision
+tqdm
+scikit-learn # sklearn
+tensorboard
