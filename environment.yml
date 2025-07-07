@@ -1,0 +1,38 @@
+
+
+
+name: firescars
+channels:
+  - pytorch            # official PyTorch builds
+  - conda-forge        # geospatial & science stuff
+  - defaults
+dependencies:
+  # Core language
+  - python=3.10
+
+  # DL stack
+  - pytorch            # CPU-only build – add cudatoolkit below for GPU
+  - torchvision
+  - torchaudio
+  #- cudatoolkit=12.5   # or 12.1, 11.8, etc.—match the *driver* line above
+
+
+  # Data science
+  - numpy
+  - pandas
+  - scikit-learn
+  - scipy
+  - matplotlib
+  - tqdm
+  - ipywidgets
+
+  # Geospatial
+  - rasterio
+  - gdal               # pulls compatible proj/geos packages
+
+  # Logging / notebooks
+  - tensorboard
+  - ipykernel
+  - jupyterlab
+
+
