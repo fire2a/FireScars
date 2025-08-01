@@ -8,8 +8,10 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 from torchvision.transforms import Normalize
 from sklearn.metrics import jaccard_score
-from model_u_net import DoubleConv, Down, Up, OutConv, UNet, model
-from parameters import LS_max_as, LI_min_as, mean_as, std_as, min_as, max_as, LS_max128, LI_min128, mean_128, std_128, min_128, max_128
+from model_u_net import model, device
+from parameters import LS_max_as, LI_min_as, mean_as, std_as
+from parameters import dataset1_training_path, dataset2_training_path, dataset1_validation_path, dataset2_validation_path, model_AS_path
+from parameters import dataset1_Firescar_tif_AS_paths, dataset1_PostFire_tif_AS_paths, dataset1_PreFire_tif_AS_paths, dataset2_Firescar_tif_AS_paths, dataset2_PostFire_tif_AS_paths, dataset2_PreFire_tif_AS_paths   
 import pandas as pd
 import rasterio as rio 
 import os
@@ -29,15 +31,15 @@ data_train=data_train1=data_train2=data_val=data_val1=data_val2=pd.DataFrame()  
 
 
 # when there are two datasets to analyze
-'''
-data_train1=pd.read_csv("../datasets_csv_11_2023/val_train_684.csv")
-data_train2=pd.read_csv("../datasets_csv_11_2023/bio_train_693.csv")  
+
+data_train1=pd.read_csv(dataset1_training_path)
+data_train2=pd.read_csv(dataset2_training_path)  
 data_train=pd.concat([data_train1,data_train2], axis=0, ignore_index=True)
 
-data_val1=pd.read_csv("../datasets_csv_11_2023/val_val_196.csv")
-data_val2=pd.read_csv("../datasets_csv_11_2023/bio_val_198.csv")  
+data_val1=pd.read_csv(dataset1_validation_path)
+data_val2=pd.read_csv(dataset2_validation_path)  
 data_val=pd.concat([data_val1,data_val2], axis=0, ignore_index=True)
-'''
+
 # -
 
 def preprocessing(imgdata):
@@ -91,14 +93,14 @@ class firescardataset():
         # read in segmentation label files
        
         for i in range(ss1,ss2):
-            self.seglabels.append(os.path.join("../../IanMancilla/firescarvalpoallsizes/FireScar/", dataset.loc[i,"FireScar_tif"]))
-            self.imgfiles.append(os.path.join("../../IanMancilla/firescarvalpoallsizes/ImgPosF/",dataset.loc[i,"ImgPosF"]))
-            self.imgprefiles.append(os.path.join("../../IanMancilla/firescarvalpoallsizes/ImgPreF/",dataset.loc[i,"ImgPreF"]))
+            self.seglabels.append(os.path.join(dataset1_Firescar_tif_AS_paths, dataset.loc[i,"FireScar_tif"]))
+            self.imgfiles.append(os.path.join(dataset1_PostFire_tif_AS_paths,dataset.loc[i,"ImgPosF"]))
+            self.imgprefiles.append(os.path.join(dataset1_PreFire_tif_AS_paths,dataset.loc[i,"ImgPreF"]))
         
         for i in range(ss3,ss4):
-            self.seglabels.append(os.path.join("../../IanMancilla/firescarbiobioallsizes/FireScar/",dataset.loc[i,"FireScar_tif"]))
-            self.imgfiles.append(os.path.join("../../IanMancilla/firescarbiobioallsizes/ImgPosF/",dataset.loc[i,"ImgPosF"]))
-            self.imgprefiles.append(os.path.join("../../IanMancilla/firescarbiobioallsizes/ImgPreF/",dataset.loc[i,"ImgPreF"]))
+            self.seglabels.append(os.path.join(dataset2_Firescar_tif_AS_paths,dataset.loc[i,"FireScar_tif"]))
+            self.imgfiles.append(os.path.join(dataset2_PostFire_tif_AS_paths,dataset.loc[i,"ImgPosF"]))
+            self.imgprefiles.append(os.path.join(dataset2_PreFire_tif_AS_paths,dataset.loc[i,"ImgPreF"]))
         
         self.imgfiles = np.array(self.imgfiles)
         self.imgprefiles=np.array(self.imgprefiles)
@@ -478,10 +480,9 @@ if __name__ == '__main__':
                                                     factor=0.5, threshold=1e-4,
                                                     min_lr=1e-6)
     # -
-    '''
-    model_path="/modelos/ep25_lr1e-04_bs16_021__as_std_adam_f01_13_07_x3.model"
-    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
-    '''
+    
+    model.load_state_dict(torch.load(model_AS_path, map_location=torch.device('cpu')))
+    
     # run training
 
     train_model(model, args.ep, opt, loss, args.bs, 1)
