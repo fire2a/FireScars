@@ -30,7 +30,7 @@ There are 3 `.py` files, also notebook (`.ipynb`) versions of the code are more 
 *
 *
 *
-The trained models can be found here: https://drive.google.com/drive/folders/13UcuxZ1my6RmIuFPrQYG_J-BP_mLFZUc
+The trained models can be found here: https://github.com/fire2a/FireScar-Mapper-Plugin/releases/tag/v1.0
 
 ### Material and Methods
 
